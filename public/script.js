@@ -35,15 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
       button.style.backgroundColor = "#ccc";
     });
 
-    // // Change color on hover });
-    // button.addEventListener('mouseout', () => {
-    //   button.style.backgroundColor = "";
-    //   // Revert to original color on mouse out
-    // });
-
-    // button.addEventListener('click', () => handleButtonClick(url));
-    // return button;
-
     button.onclick = () => window.open(url, "_blank");
     return button;
   };
@@ -77,29 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         messageElement.textContent = data.message;
       }
-
-      // const data = await response.json();
-      // const message = data.message || "Here is the data:";
-      // chatbox.appendChild(createChatLi(message, "incoming"));
-      // if (data.openSlots || data.bookedAppointments) {
-      //   if (data.openSlots) {
-      //     const openSlotsMessage =
-      //       "Open Slots:\n" +
-      //       data.openSlots.map((slot) => `${slot.time}`).join("\n");
-      //     chatbox.appendChild(createChatLi(openSlotsMessage, "incoming"));
-      //   }
-      //   if (data.bookedAppointments) {
-      //     const bookedSlotsMessage =
-      //       "Booked Slots:\n" +
-      //       data.bookedAppointments
-      //         .map((app) => `${app.time} - ${app.patientName}`)
-      //         .join("\n");
-      //     chatbox.appendChild(createChatLi(bookedSlotsMessage, "incoming"));
-      //   }
-      // } else {
-      //   const dataMessage = JSON.stringify(data, null, 2);
-      //   chatbox.appendChild(createChatLi(dataMessage, "incoming"));
-      // }
     } catch (error) {
       console.log(error);
       messageElement.classList.add("error");
