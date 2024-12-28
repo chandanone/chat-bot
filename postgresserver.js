@@ -43,9 +43,10 @@ const getAppointments = async (req, res) => {
 
 const getAppointmentStatus = async (req, res) => {
   const { appointment_id } = req.body;
+  //const appointment_id = req.body.appointment_id;
 
   // Validate appointment_id
-  if (!appointment_id || typeof appointment_id !== "number") {
+  if (!appointment_id) {
     return res.status(400).json({ error: "Invalid Appointment ID" });
   }
 

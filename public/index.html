@@ -4,37 +4,335 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chatbot</title>
-    <link rel="stylesheet" href="style.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
-    />
-    <script src="script.js" defer></script>
+    <style>
+      .chatbox {
+        width: 300px;
+        height: 400px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        overflow-y: auto;
+      }
+      .chat-input {
+        display: flex;
+        margin-top: 10px;
+      }
+      .chat-input textarea {
+        flex: 1;
+        padding: 5px;
+      }
+      .chat-input span {
+        padding: 5px;
+        background-color: blue;
+        color: white;
+        cursor: pointer;
+        user-select: none;
+      }
+      .chat {
+        margin-bottom: 10px;
+      }
+      .chat.outgoing p {
+        text-align: right;
+        background-color: lightblue;
+      }
+      .chat.incoming p {
+        text-align: left;
+        background-color: lightgrey;
+      }
+      .button-container button {
+        margin: 5px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: #007bff;
+        color: white;
+      }
+    </style>
   </head>
   <body>
-    <h1 cl>CMC RANCHI</h1>
-    <button class="chatbot-toggler">
-      <span class="material-symbols-outlined">mode_comment</span>
-      <span class="material-symbols-outlined">close</span>
-    </button>
-    <div class="chatbot">
-      <header>
-        <h2>Chatbot</h2>
-        <span class="close-btn material-symbols-outlined">close</span>
-      </header>
-      <ul class="chatbox">
-        <li class="chat incoming">
-          <span class="material-symbols-outlined">smart_toy</span>
-          <p>
-            How can i help you? <br />
-            Please enter your name?
-          </p>
-        </li>
-      </ul>
-      <div class="chat-input">
-        <textarea placeholder="Enter a message..." required></textarea>
-        <span id="send-btn" class="material-symbols-outlined">send</span>
-      </div>
+    <div class="chatbox"></div>
+    <div class="chat-input">
+      <textarea placeholder="Type your message..."></textarea>
+      <span>Send</span>
     </div>
+    <div id="appointmentInput" style="display: none; margin-top: 10px">
+      <input type="text" placeholder="Enter Appointment ID..." />
+      <button>Check Status</button>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const chatInput = document.querySelector(".chat-input textarea");
+        const chatInputArea = document.querySelector(".chat-input");
+        const sendChatBtn = document.querySelector(".chat-input span");
+        const chatbox = document.querySelector(".chatbox");
+        const appointmentInput = document.getElementById("appointmentInput");
+        let userMessage;
+
+        const createChatLi = (message, className) => {
+          const chatLi = document.createElement("li");
+          chatLi.classList.add("chat", className);
+          const chatContent =
+            className === "outgoing"
+              ? `<p></p>`
+              : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
+          chatLi.innerHTML = chatContent;
+          chatLi.querySelector("p").textContent = message;
+          return chatLi;
+        };
+
+        const createButton = (label, url) => {
+          const button = document.createElement("button");
+          button.textContent = label;
+          button.style.cssText = `
+          margin: 5px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+          padding: 8px 16px;
+          border: none;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          background-color: #007BFF;
+          color: white;
+        `;
+          button.setAttribute(
+            "id",
+            label.replace(/\s+/g, "").toLowerCase() + "Btn"
+          );
+          button.addEventListener(
+            "mouseover",
+            () => (button.style.backgroundColor = "#0056b3")
+          );
+          button.addEventListener(
+            "mouseout",
+            () => (button.style.backgroundColor = "#007BFF")
+          );
+          button.onclick = () => {
+            if (label.toLowerCase() === "appointment status") {
+              handleAppointmentStatusClick();
+            } else if (label.toLowerCase() === "working hours") {
+              handleWorkingHoursClick();
+            } else if (label.toLowerCase() === "medical tests") {
+              handleMedicalTestsClick();
+            } else {
+              window.open(url, "_blank");
+            }
+          };
+          return button;
+        };
+
+        const handleChat = async () => {
+          userMessage = chatInput.value.trim();
+          if (!userMessage) return;
+
+          chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+          chatbox.scrollTo(0, chatbox.scrollHeight);
+
+          setTimeout(() => {
+            const incomingChatLi = createChatLi("Thinking...", "incoming");
+            chatbox.appendChild(incomingChatLi);
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+            generateResponse(incomingChatLi);
+          }, 600);
+
+          chatInputArea.style.display = "none";
+        };
+
+        const generateResponse = async (incomingChatLi) => {
+          const API_URL = "http://localhost:3000/chat";
+          const messageElement = incomingChatLi.querySelector("p");
+
+          try {
+            const response = await fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ message: userMessage }),
+            });
+
+            const data = await response.json();
+            messageElement.textContent = data.message;
+
+            if (data.links) {
+              const buttonsDiv = document.createElement("div");
+              Object.keys(data.links).forEach((key) => {
+                buttonsDiv.appendChild(
+                  createButton(
+                    key.charAt(0).toUpperCase() + key.slice(1),
+                    data.links[key]
+                  )
+                );
+              });
+              messageElement.appendChild(buttonsDiv);
+            }
+          } catch (error) {
+            console.error(error);
+            messageElement.classList.add("error");
+            messageElement.textContent =
+              "Oops! Something went wrong. Please try again.";
+          } finally {
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+          }
+        };
+
+        const handleAppointmentStatusClick = () => {
+          appointmentInput.style.display = "block";
+        };
+
+        const handleAppointmentStatusSubmit = async () => {
+          const appointmentId = appointmentInput
+            .querySelector("input")
+            .value.trim();
+          console.log(appointmentId);
+          if (!appointmentId) {
+            alert("Please enter an Appointment ID.");
+            return;
+          }
+
+          try {
+            const response = await fetch(
+              "http://localhost:3000/appointment-status",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ appointment_id: appointmentId }),
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error("Failed to fetch appointment data.");
+            }
+
+            const data = await response.json();
+            displayAppointmentDetails(data);
+          } catch (error) {
+            console.error(error);
+            alert("An error occurred while fetching appointment details.");
+          }
+        };
+
+        const displayAppointmentDetails = (data) => {
+          chatInput.value = "";
+          chatInputArea.style.display = "none";
+
+          const appointmentDetails = `
+          <div class="appointment-card">
+            <h3>Appointment Details</h3>
+            <p><strong>Patient Name:</strong> ${data.patient_name}</p>
+            <p><strong>Doctor Name:</strong> ${data.doctor_name}</p>
+            <p><strong>Appointment Time:</strong> ${new Date(
+              data.appointment_time
+            ).toLocaleString()}</p>
+            <p><strong>Status:</strong> ${data.status}</p>
+          </div>
+        `;
+          chatbox.innerHTML += appointmentDetails;
+        };
+
+        /*
+        const medicalTests = `
+            <div class="medical-tests-card">
+              <h3>Medical Tests</h3>
+              ${data
+                .map(
+                  (test) => `
+                <p><strong>Test Name:</strong> ${test.test_name}</p>
+                <p><strong>Description:</strong> ${test.description}</p>
+                <p><strong>Price:</strong> ${test.price}</p>
+                <p><strong>Preparation:</strong> ${test.preparation}</p>
+                <p><strong>Duration:</strong> ${test.duration}</p>
+              `
+                )
+                .join("")}
+            </div>
+        */
+        const handleWorkingHoursClick = async () => {
+          const API_URL = "http://localhost:3000/working-hours";
+
+          try {
+            const response = await fetch(API_URL, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to fetch working hours.");
+            }
+
+            const data = await response.json();
+            displayWorkingHours(data);
+          } catch (error) {
+            console.error(error);
+            alert("An error occurred while fetching working hours.");
+          }
+        };
+
+        const displayWorkingHours = (data) => {
+          const workingHours = `
+          <div class="working-hours-card">
+            <h3>Working Hours</h3>
+            ${data
+              .map(
+                (hour) => `
+              <p><strong>${hour.day_of_week}:</strong> ${hour.start_time} - ${hour.end_time}</p>
+            `
+              )
+              .join("")}
+          </div>
+        `;
+          chatbox.innerHTML += workingHours;
+        };
+
+        //medical tests
+        const handleMedicalTestsClick = async () => {
+          const API_URL = "http://localhost:3000/medical-tests";
+          try {
+            const response = await fetch(API_URL, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            });
+            if (!response.ok) {
+              throw new Error("Failed to fetch medical tests.");
+            }
+            const data = await response.json();
+            displayMedicalTests(data);
+          } catch (error) {
+            console.error(error);
+            alert("An error occurred while fetching medical tests.");
+          }
+        };
+
+        const displayMedicalTests = (data) => {
+          const medicalTests = `
+            <div class="medical-tests-card">
+              <h3>Medical Tests</h3>
+              ${data
+                .map(
+                  (test) => `
+                <p><strong>Test Name:</strong> ${test.test_name}</p>
+                <p><strong>Description:</strong> ${test.description}</p>
+                <p><strong>Price:</strong> ${test.price}</p>
+                <p><strong>Preparation:</strong> ${test.preparation}</p>
+                <p><strong>Duration:</strong> ${test.duration}</p>
+              `
+                )
+                .join("")}
+            </div>
+          `;
+          chatbox.innerHTML += medicalTests;
+        };
+
+        sendChatBtn.addEventListener("click", handleChat);
+        appointmentInput
+          .querySelector("button")
+          .addEventListener("click", handleAppointmentStatusSubmit);
+      });
+    </script>
   </body>
 </html>
