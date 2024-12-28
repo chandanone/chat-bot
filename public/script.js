@@ -29,10 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
     button.style.bordeRadius = "10px";
     button.style.cursor = "pointer";
     button.style.transition = "background-color 0.3s";
-    button.style.padding = "2px";
+    button.style.padding = "8px 16px"; // Adjusted padding for better button shape
+    button.style.border = "none"; // Removed default border for a cleaner look
+    button.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)"; // Added a subtle shadow for depth
+    button.style.backgroundColor = "#007BFF"; // Added a default background color
+    button.style.color = "white"; // Ensured text is visible on the button
 
+    // Add hover effect for a better interactive experience
     button.addEventListener("mouseover", () => {
-      button.style.backgroundColor = "#ccc";
+      button.style.backgroundColor = "#0056b3"; // Darker shade on hover
+    });
+    button.addEventListener("mouseout", () => {
+      button.style.backgroundColor = "#007BFF"; // Original color
     });
 
     button.onclick = () => window.open(url, "_blank");
@@ -40,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const generateResponse = async (incomingChatLi) => {
-    const API_URL = "http://localhost:3001/chat";
+    const API_URL = "http://localhost:3000/chat";
     const messageElement = incomingChatLi.querySelector("p");
 
     try {

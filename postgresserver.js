@@ -94,9 +94,9 @@ const chat = (req, res) => {
 
   // Helpful links
   const helpfulLinks = {
-    "appointment status": "http://localhost:3001/appointment-status",
-    "working hours": "http://localhost:3001/working-hours",
-    "medical tests": "http://localhost:3001/tests",
+    "appointment status": "http://localhost:3000/appointment-status",
+    "working hours": "http://localhost:3000/working-hours",
+    "medical tests": "http://localhost:3000/medical-tests",
   };
 
   // Response
@@ -132,7 +132,7 @@ const getMedicalTests = async (req, res) => {
   }
 };
 // Define API endpoints
-app.get("/appointments", getAppointments);
+//app.get("/appointments", getAppointments);
 app.post("/appointment-status", getAppointmentStatus);
 app.get("/working-hours", getWorkingHours);
 app.get("/medical-tests", getMedicalTests);
